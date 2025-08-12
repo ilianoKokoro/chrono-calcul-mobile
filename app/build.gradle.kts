@@ -1,5 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val versionMajor = 1
-val versionMinor = 2
+val versionMinor = 3
 val versionPatch = 1
 
 plugins {
@@ -10,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.iliano.chrono_calcul_mobile"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.iliano.chrono_calcul_mobile"
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 36
         versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,23 +35,28 @@ android {
             )
         }
     }
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+        }
     }
+
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
     }
 }
 
