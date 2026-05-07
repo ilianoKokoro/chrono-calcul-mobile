@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
 val versionMajor = 1
 val versionMinor = 4
@@ -6,12 +5,11 @@ val versionPatch = 0
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.compose)
 }
 
-kotlinExtension.jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+kotlin {
+    jvmToolchain(17)
 }
 
 android {
@@ -21,7 +19,7 @@ android {
     defaultConfig {
         applicationId = "com.iliano.chrono_calcul_mobile"
         ndkVersion = "30.0.14904198"
-        minSdk = 30
+        minSdk = 26
         targetSdk = 37
         versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -31,32 +29,21 @@ android {
         }
     }
 
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
     splits {
         abi {
             isEnable = false
             isUniversalApk = true
-        }
-    }
-
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
 
