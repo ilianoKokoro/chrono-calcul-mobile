@@ -1,4 +1,19 @@
-name: Build the latest beta APK
+name: Build the android APK
+permissions:
+    contents: read
+on:
+    push:
+        branches:
+            - main
+            - prod
+        paths-ignore:
+            - "README.md"
+            - ".gitignore"
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 env:
     # The name of the main module repository
@@ -7,26 +22,19 @@ env:
     app_name: Chrono Calcul
 
     apk_file_name: ChronoCalcul
-on:
-    workflow_dispatch:
-    push:
-        branches: ["prod"]
-
-    pull_request:
-        branches: ["prod"]
 
 jobs:
     build:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - name: Set Up JDK
               uses: actions/setup-java@v4
               with:
                   distribution: "temurin"
-                  java-version: "21"
+                  java-version: 17
                   cache: "gradle"
 
             - name: Change wrapper permissions
@@ -47,14 +55,14 @@ jobs:
                   keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
                   keyPassword: ${{ secrets.KEY_PASSWORD }}
               env:
-                  # override default build-tools version (33.0.0) -- optional
-                  BUILD_TOOLS_VERSION: "35.0.0"
+                  BUILD_TOOLS_VERSION: "37.0.0"
 
             - name: Rename APK file
-              run: sudo mv ${{steps.sign_app.outputs.signedReleaseFile}} /${{env.apk_file_name}}.apk
+              run: sudo mv ${{steps.sign_app.outputs.signedReleaseFile}}
+                  /${{env.apk_file_name}}.apk
 
             - name: Upload APK Release
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: release-build
                   path: /${{env.apk_file_name}}.apk
