@@ -30,13 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.iliano.chrono_calcul_mobile.R
-import com.iliano.chrono_calcul_mobile.core.toFormatedString
+import com.iliano.chrono_calcul_mobile.core.toFormattedString
 import com.iliano.chrono_calcul_mobile.ui.components.TimePickerDialog
 import java.time.LocalTime
 
@@ -44,6 +45,7 @@ import java.time.LocalTime
 fun CalculatorScreen(calculatorViewModel: CalculatorViewModel = viewModel()) {
     val uiStateValue = calculatorViewModel.uiState.collectAsStateWithLifecycle().value
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     if (uiStateValue.showTimePicker) {
         LaunchedEffect(
@@ -57,13 +59,13 @@ fun CalculatorScreen(calculatorViewModel: CalculatorViewModel = viewModel()) {
         }
     }
 
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         calculatorViewModel.eventsFlow.collect { event ->
             when (event) {
                 is CalculatorViewModel.ScreenEvent.EnteredTimeInvalid -> {
                     Toast.makeText(
                         context,
-                        context.getString(R.string.invalid_time_error),
+                        resources.getString(R.string.invalid_time_error),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -71,13 +73,12 @@ fun CalculatorScreen(calculatorViewModel: CalculatorViewModel = viewModel()) {
                 is CalculatorViewModel.ScreenEvent.GenericError -> {
                     Toast.makeText(
                         context,
-                        context.getString(R.string.genericError),
+                        resources.getString(R.string.genericError),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         }
-
     }
 
     val orientation = LocalConfiguration.current.orientation
@@ -226,6 +227,8 @@ fun ResultBox(resultString: String) {
 
 @Composable
 fun TimePickerDisplay(selectedTime: LocalTime, onPress: () -> Unit) {
+
+    val context = LocalContext.current
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
@@ -235,7 +238,7 @@ fun TimePickerDisplay(selectedTime: LocalTime, onPress: () -> Unit) {
             }
     ) {
         Text(
-            text = selectedTime.toFormatedString(),
+            text = selectedTime.toFormattedString(context),
             style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.onTertiaryContainer,
             textAlign = TextAlign.Center,

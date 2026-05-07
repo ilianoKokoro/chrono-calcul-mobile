@@ -2,14 +2,22 @@
 
 package com.iliano.chrono_calcul_mobile.ui.screens.calculator
 
+import android.app.Application
 import android.content.Context
+import android.content.Context.VIBRATOR_SERVICE
+import android.os.Build
 import android.os.VibrationEffect
+import android.os.Vibrator
 import android.os.VibratorManager
+import android.text.format.DateFormat
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.lifecycle.ViewModel
+import androidx.compose.material3.TimePickerState
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.iliano.chrono_calcul_mobile.core.Constants
-import com.iliano.chrono_calcul_mobile.core.toFormatedString
+import com.iliano.chrono_calcul_mobile.core.toFormattedString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +25,18 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 import kotlin.time.Duration
 
-class CalculatorViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(CalculatorState())
+class CalculatorViewModel(
+    application: Application
+) : AndroidViewModel(application) {
+
+    private val _uiState = MutableStateFlow(
+        CalculatorState(
+            timePickerState = createTimePickerState()
+        )
+    )
     val uiState = _uiState.asStateFlow()
 
     private val _eventsFlow = MutableSharedFlow<ScreenEvent>()
@@ -38,10 +54,10 @@ class CalculatorViewModel : ViewModel() {
     fun onOffsetToggle(enable: Boolean) {
         _uiState.update {
             _uiState.value.copy(
-                checkBoxState = enable
+                checkBoxState = enable,
+                        calculation = _uiState.value.calculation.copy(applyOffset = enable)
             )
         }
-        setCalculationOffset(enable)
         updateTextResult()
     }
 
@@ -71,24 +87,30 @@ class CalculatorViewModel : ViewModel() {
     }
 
     fun vibrateDevice(context: Context, type: VibrationTypes) {
-        val vibratorManager =
-            context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-        val vibrator = vibratorManager.defaultVibrator
+        val vibrator: Vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager =
+             context.getSystemService(VibratorManager::class.java)
+
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(VIBRATOR_SERVICE) as Vibrator
+        }
 
         if (vibrator.hasVibrator()) {
             vibrator.vibrate(
                 when (type) {
                     VibrationTypes.Short -> {
                         VibrationEffect.createOneShot(
-                            Constants.VIBRATIONS.SMALL_DURATION,
+                            Constants.Vibrations.SMALL_DURATION,
                             VibrationEffect.DEFAULT_AMPLITUDE
                         )
                     }
 
                     VibrationTypes.Tick -> {
                         VibrationEffect.createOneShot(
-                            Constants.VIBRATIONS.SMALL_DURATION, // Duration in milliseconds
-                            Constants.VIBRATIONS.TICK_AMPLITUDE // Half of the default amplitude
+                            Constants.Vibrations.SMALL_DURATION,
+                            Constants.Vibrations.TICK_AMPLITUDE
                         )
                     }
                 }
@@ -97,14 +119,21 @@ class CalculatorViewModel : ViewModel() {
 
     }
 
-    private fun setCalculationOffset(enable: Boolean) {
-        _uiState.value.calculation.applyOffset = enable
+    private fun createTimePickerState(): TimePickerState {
+        val now = LocalTime.now()
+
+        return TimePickerState(
+            is24Hour = DateFormat.is24HourFormat(application.applicationContext),
+            initialHour = now.hour,
+            initialMinute = now.minute
+        )
     }
+
 
     private fun updateTextResult() {
         _uiState.update {
             _uiState.value.copy(
-                resultText = _uiState.value.calculation.duration.toFormatedString()
+                resultText = _uiState.value.calculation.duration.toFormattedString()
             )
         }
     }
@@ -117,7 +146,6 @@ class CalculatorViewModel : ViewModel() {
     sealed class VibrationTypes {
         data object Short : VibrationTypes()
         data object Tick : VibrationTypes()
-
     }
 
 }

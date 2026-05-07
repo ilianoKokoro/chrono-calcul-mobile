@@ -10,12 +10,8 @@ import java.time.LocalTime
 
 data class CalculatorState(
     val calculation: Calculation = Calculation(),
-    val resultText: String = String(),
-    val checkBoxState: Boolean = Constants.DEFAULT_VALUES.OFFSET,
-    val timePickerState: TimePickerState = TimePickerState(
-        is24Hour = Constants.DEFAULT_VALUES.UI_IS_24_HOUR,
-        initialHour = LocalTime.now().hour,
-        initialMinute = LocalTime.now().minute
-    ),
-    val showTimePicker: Boolean = Constants.DEFAULT_VALUES.TIME_PICKER_SHOWN
+    val resultText: String = "",
+    val checkBoxState: Boolean = Constants.DefaultValues.OFFSET,
+    val timePickerState: TimePickerState,
+    val showTimePicker: Boolean = false
 )

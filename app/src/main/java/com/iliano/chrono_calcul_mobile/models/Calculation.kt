@@ -6,7 +6,7 @@ import java.time.LocalTime
 import kotlin.time.Duration
 
 data class Calculation(
-    var applyOffset: Boolean = Constants.DEFAULT_VALUES.OFFSET,
+    var applyOffset: Boolean = Constants.DefaultValues.OFFSET,
     private var _targetTime: LocalTime = LocalTime.now()
 ) {
     fun setTargetTime(hours: Int, minutes: Int) {
@@ -22,7 +22,7 @@ data class Calculation(
             var currentTime = LocalTime.now()
 
             if (applyOffset) {
-                currentTime = currentTime.plusMinutes(Constants.TIME_OFFSETS.SECURITY_MINUTES)
+                currentTime = currentTime.plusMinutes(Constants.TimeOffsets.SECURITY_MINUTES)
             }
 
             if (_targetTime.isBefore(currentTime)) {
