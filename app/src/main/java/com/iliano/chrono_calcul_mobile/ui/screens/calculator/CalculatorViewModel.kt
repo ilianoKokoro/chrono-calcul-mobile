@@ -62,9 +62,15 @@ class CalculatorViewModel(
     }
 
     fun showTimePicker() {
+    val currentChosenTime = _uiState.value.calculation.getTargetTime()
         _uiState.update {
             _uiState.value.copy(
                 showTimePicker = true
+                , timePickerState = TimePickerState(
+                    is24Hour = DateFormat.is24HourFormat(application.applicationContext),
+                    initialHour = currentChosenTime.hour,
+                    initialMinute = currentChosenTime.minute
+                )
             )
         }
     }
